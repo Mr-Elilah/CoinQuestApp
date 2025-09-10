@@ -1,5 +1,3 @@
-// Головна сторінка
-
 export default function Home() {
   return (
     <main>

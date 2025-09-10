@@ -3,13 +3,13 @@ import type { Metadata } from "next";
 export const metadataUk: Metadata = {
   title: "CoinQuest",
   description:
-    "Додаток для обліку доходів і витрат, фінансових цілей та аналізу інвестицій.",
-  keywords: ["фінанси", "інвестиції", "бюджет", "облік витрат"],
+    "Додаток для обліку доходів і витрат, постановки фінансових цілей та аналізу інвестицій.",
+  keywords: ["фінанси", "інвестиції", "бюджет", "гроші", "управління"],
   authors: [{ name: "Mr.Elijah" }],
   openGraph: {
     title: "CoinQuest",
     description:
-      "Додаток, який допомагає крок за кроком досягати фінансової свободи.",
+      "Додаток, що допомагає досягти фінансової свободи крок за кроком.",
     url: "https://CoinQuest.app",
     siteName: "CoinQuest",
     images: [
