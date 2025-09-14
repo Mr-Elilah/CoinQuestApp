@@ -1,21 +1,19 @@
+// app/layout.tsx
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
-import Providers from "@/components/Providers";
+import Providers from "@/src/components/Providers";
 import "../styles/globals.css";
 
 import { getMetadata } from "@/metadata/getMetadata";
-import { getLocaleFromHeaders } from "@/utils/locale";
-import { loadMessages } from "@/utils/loadMessages";
-import { headers } from "next/headers";
+import { getLocale } from "@/src/utils/locale";
+import { loadMessages } from "@/src/utils/loadMessages";
+import LocaleSwitcher from "@/src/components/LocaleSwitcher";
 
 const font = Plus_Jakarta_Sans({ subsets: ["latin", "cyrillic-ext"] });
 
 export async function generateMetadata(): Promise<Metadata> {
-  const headersList = await headers();
-  const locale = getLocaleFromHeaders(
-    Object.fromEntries(headersList.entries())
-  );
-  return getMetadata(locale);
+  const locale = await getLocale();
+  return getMetadata(locale); // уже корректный тип SupportedLocale
 }
 
 export default async function RootLayout({
@@ -23,18 +21,21 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const headersList = await headers();
-  const locale = getLocaleFromHeaders(
-    Object.fromEntries(headersList.entries())
-  );
-
+  const locale = await getLocale();
   const messages = await loadMessages(locale);
 
   return (
     <html lang={locale}>
       <body className={font.className}>
         <Providers locale={locale} messages={messages}>
-          {children}
+          <header className="p-4 flex justify-end">
+            <LocaleSwitcher currentLocale={locale} />
+          </header>
+
+          <main>
+            {children}
+            <p>Current locale: {locale}</p>
+          </main>
         </Providers>
       </body>
     </html>
