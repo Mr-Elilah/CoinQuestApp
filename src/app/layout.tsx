@@ -7,7 +7,7 @@ import "../styles/globals.css";
 import { getMetadata } from "@/metadata/getMetadata";
 import { getLocale } from "@/src/utils/locale";
 import { loadMessages } from "@/src/utils/loadMessages";
-import LocaleSwitcher from "@/src/components/LocaleSwitcher";
+import Header from "../components/Header";
 
 const font = Plus_Jakarta_Sans({ subsets: ["latin", "cyrillic-ext"] });
 
@@ -28,7 +28,7 @@ export default async function RootLayout({
     <html lang={locale}>
       <body className={font.className}>
         <Providers locale={locale} messages={messages}>
-          <LocaleSwitcher currentLocale={locale} />
+          <Header currentLocale={locale}>CoinQuest</Header>
 
           <main>
             {children}
