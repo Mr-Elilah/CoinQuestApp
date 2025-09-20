@@ -28,9 +28,7 @@ export default async function RootLayout({
     <html lang={locale}>
       <body className={font.className}>
         <Providers locale={locale} messages={messages}>
-          <header className="p-4 flex justify-end">
-            <LocaleSwitcher currentLocale={locale} />
-          </header>
+          <LocaleSwitcher currentLocale={locale} />
 
           <main>
             {children}
