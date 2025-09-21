@@ -1,4 +1,3 @@
-// app/profile/page.tsx
 "use client";
 
 import { useIntl } from "react-intl";

@@ -1,8 +1,6 @@
 "use client";
 import React from "react";
-import Image from "next/image";
-import LocaleSwitcher from "./LocaleSwitcher";
-
+import Button from "./button";
 export interface HeadersProps {
   children: React.ReactNode;
   currentLocale: string;
@@ -14,10 +12,12 @@ export default function Header({ children, currentLocale }: HeadersProps) {
       <h1 className="flex-1 text-3xl font-semibold text-gray-900">
         {children}
       </h1>
-      <div className="flex items-center gap-8">
-        <LocaleSwitcher currentLocale={currentLocale} />
-        <div className="w-px h-10 bg-gray-300" />
-        <Image width={44} height={44} src="/images/avatar.png" alt="avatar" />
+      <div className="flex gap-3 items-center">
+        <Button type="burger" />
+        <Button type="messages" />
+        <Button type="notifications" />
+        <Button type="locale" currentLocale={currentLocale} />
+        <Button type="avatar" />
       </div>
     </header>
   );
