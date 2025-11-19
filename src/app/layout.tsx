@@ -26,6 +26,12 @@ export default async function RootLayout({
 
   return (
     <html lang={locale}>
+      <head>
+        <link
+          href="https://fonts.googleapis.com/icon?family=Material+Icons"
+          rel="stylesheet"
+        />
+      </head>
       <body className={font.className}>
         <Providers locale={locale} messages={messages}>
           <Header currentLocale={locale}>CoinQuest</Header>

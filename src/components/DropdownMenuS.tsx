@@ -19,7 +19,7 @@ export default function DropdowmMenuS({
     <div className={`relative ${className || ""}`}>
       <button
         onClick={() => setOpen(!open)}
-        className="p-1 flex items-center justify-center"
+        className="p-1 flex items-center justify-center border-none"
       >
         {buttonContent}
       </button>
