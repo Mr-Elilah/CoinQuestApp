@@ -5,6 +5,7 @@ import Image from "next/image";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
 import { SUPPORTED_LOCALES, LOCALE_COOKIE } from "../i18n/routing";
+
 export interface HeadersProps {
   children: React.ReactNode;
   currentLocale: string;
@@ -12,16 +13,15 @@ export interface HeadersProps {
 
 export default function Header({ children, currentLocale }: HeadersProps) {
   const router = useRouter();
-
   const flags: Record<string, string> = { en: "GB", ru: "RU", uk: "UA" };
+
   return (
-    <header className="flex items-center gap-5 py-6 px-10 border-b border-gray-300">
+    <header className="flex items-center py-6 px-10 border-b border-gray-300">
       <h1 className="flex-1 text-3xl font-semibold text-gray-900">
         {children}
       </h1>
 
-      <div className="flex gap-3 items-center">
-        {/* Сообщения */}
+      <div className="flex items-center gap-3 ">
         <HeaderMenu
           trigger={<span className="material-icons">mail</span>}
           content={
@@ -34,7 +34,6 @@ export default function Header({ children, currentLocale }: HeadersProps) {
           }
         />
 
-        {/* Уведомления */}
         <HeaderMenu
           trigger={<span className="material-icons">notifications</span>}
           content={
@@ -46,7 +45,6 @@ export default function Header({ children, currentLocale }: HeadersProps) {
           }
         />
 
-        {/* Смена языка */}
         <HeaderMenu
           trigger={<span className="material-icons">language</span>}
           content={
@@ -67,7 +65,6 @@ export default function Header({ children, currentLocale }: HeadersProps) {
           }
         />
 
-        {/* Аккаунт */}
         <HeaderMenu
           trigger={
             <Image
