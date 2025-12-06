@@ -16,7 +16,7 @@ export default function Header({ children, currentLocale }: HeadersProps) {
   const flags: Record<string, string> = { en: "GB", ru: "RU", uk: "UA" };
 
   return (
-    <header className="flex items-center py-6 px-10 border-b border-gray-300">
+    <header className="flex items-center py-4 px-6 border-b border-gray-300">
       <h1 className="flex-1 text-3xl font-semibold text-gray-900">
         {children}
       </h1>
