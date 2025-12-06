@@ -1,34 +1,27 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const NAV = [
-  { label: "Dashboard", href: "/(admin)/dashboard", icon: "dashboard" },
-  { label: "Profile", href: "/(admin)/profile", icon: "person" },
+  // NOTE: '(admin)' — это route group и НЕ включается в URL.
+  // Страницы в src/app/(admin)/dashboard -> доступны по /dashboard
+  { label: "Dashboard", href: "/dashboard", icon: "dashboard" },
+  { label: "Profile", href: "/profile", icon: "person" },
   { label: "Settings", href: "/settings", icon: "settings" },
 ];
 
-export default function Sidebar() {
-  const [open, setOpen] = useState(false);
+export default function Sidebar({
+  open,
+  setOpen,
+}: {
+  open: boolean;
+  setOpen: (value: boolean) => void;
+}) {
   const pathname = usePathname();
-
-  useEffect(() => {
-    setOpen(false);
-  }, [pathname]);
 
   return (
     <>
-      {/* Mobile burger */}
-      <button
-        aria-label="Open-sidebar"
-        onClick={() => setOpen(true)}
-        className="md:hidden fixed top-4 left-4 z-40 p-2 rounded-md bg-black/60 text-white backdrop-blur-sm"
-      >
-        <span className="material-icons">menu</span>
-      </button>
-
       {/* Overlay */}
       <div
         className={`fixed inset-0 bg-black/50 z-30 transition-opacity duration-200 ${
@@ -42,14 +35,14 @@ export default function Sidebar() {
       {/* Sidebar */}
       <aside
         className={`fixed top-0 left-0 z-40 h-full w-64 transform
-        bg-gradient-to-b from-[#081022] via-[#0d1626] to-[#07121b]
+        bg-gradient-to-b from-[#233044] via-[#0d1626] to-[#233044]
         text-white shadow-lg transition-transform duration-300
         flex flex-col
         ${open ? "translate-x-0" : "-translate-x-full"}
         md:translate-x-0 md:static md:h-screen`}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-4 border-b border-white/10 mb-4">
+        <div className="flex items-center justify-between px-4 py-4 border-b border-white/10">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded flex items-center justify-center bg-white/10">
               <span className="text-lg font-bold">CQ</span>
@@ -66,10 +59,11 @@ export default function Sidebar() {
           </button>
         </div>
 
-        {/* Nav — теперь flex-1 */}
-        <nav className="px-2 flex-1 overflow-y-auto">
+        {/* Nav */}
+        <nav className="px-2 pt-10 flex-1 overflow-y-auto">
           <ul className="flex flex-col space-y-1">
             {NAV.map((item) => {
+              // active: корректная проверка по pathname
               const active =
                 pathname === item.href || pathname?.startsWith(item.href + "/");
 
@@ -82,7 +76,8 @@ export default function Sidebar() {
                         active
                           ? "bg-white/10 text-white"
                           : "text-white/80 hover:bg-white/5"
-                      }`}
+                      }
+                    `}
                   >
                     <span
                       className={`material-icons text-lg flex-shrink-0 ${

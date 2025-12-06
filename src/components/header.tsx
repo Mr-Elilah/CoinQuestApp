@@ -9,19 +9,28 @@ import { SUPPORTED_LOCALES, LOCALE_COOKIE } from "../i18n/routing";
 export interface HeadersProps {
   children: React.ReactNode;
   currentLocale: string;
+  onBurgerClick?: () => void;
 }
 
-export default function Header({ children, currentLocale }: HeadersProps) {
+export default function Header({ children, onBurgerClick }: HeadersProps) {
   const router = useRouter();
   const flags: Record<string, string> = { en: "GB", ru: "RU", uk: "UA" };
 
   return (
-    <header className="flex items-center py-4 px-6 border-b border-gray-300">
+    <header className="flex items-center gap-3 py-4 px-6 border-b border-gray-300">
+      <button
+        aria-label="Open sidebar"
+        onClick={onBurgerClick}
+        className="md:hidden px-2 pt-2 pb-1 rounded-md items-center"
+        style={{ backgroundColor: "#233044" }}
+      >
+        <span className="material-icons text-white">menu</span>
+      </button>
       <h1 className="flex-1 text-3xl font-semibold text-gray-900">
         {children}
       </h1>
 
-      <div className="flex items-center gap-3 ">
+      <div className="flex items-center gap-2 ">
         <HeaderMenu
           trigger={<span className="material-icons">mail</span>}
           content={

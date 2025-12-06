@@ -7,8 +7,7 @@ import "../styles/globals.css";
 import { getMetadata } from "@/metadata/getMetadata";
 import { getLocale } from "@/src/utils/locale";
 import { loadMessages } from "@/src/utils/loadMessages";
-import Header from "../components/Header";
-import Sidebar from "@/src/components/Sidebar"; // <- new
+import LayoutClient from "@/src/app/LayoutClient"; // <- клиентский слой
 
 const font = Plus_Jakarta_Sans({ subsets: ["latin", "cyrillic-ext"] });
 
@@ -35,23 +34,7 @@ export default async function RootLayout({
       </head>
       <body className={font.className}>
         <Providers locale={locale} messages={messages}>
-          {/* Sidebar + main layout */}
-          <div className="min-h-screen flex">
-            {/* Sidebar (fixed on md+, slide on mobile) */}
-            <Sidebar />
-
-            {/* Main column: header + page content.
-                On md+ we need left padding equal to sidebar width (w-64) so content not hidden under fixed sidebar.
-            */}
-            <div className="flex-1">
-              <Header currentLocale={locale}>CoinQuest</Header>
-
-              <main>
-                {children}
-                <p>Current locale: {locale}</p>
-              </main>
-            </div>
-          </div>
+          <LayoutClient locale={locale}>{children}</LayoutClient>
         </Providers>
       </body>
     </html>
