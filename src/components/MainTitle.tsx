@@ -10,7 +10,7 @@ export default function MainTitle({ id, className = "" }: MainTitleProps) {
   const intl = useIntl();
 
   return (
-    <h1 className={`text-xl font-semibold mb-6 ${className}`}>
+    <h1 className={`text-xl font-semibold mb-10 ${className}`}>
       {intl.formatMessage({ id })}
     </h1>
   );

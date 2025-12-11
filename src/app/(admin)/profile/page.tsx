@@ -6,6 +6,7 @@ import IncomeSourcesCard from "@/src/components/IncomeSourcesCard";
 import MainTitle from "@/src/components/MainTitle";
 import ParticipantCard from "@/src/components/ParticipantCard";
 import ProgressCard from "@/src/components/ProgressCard";
+import ResourcesCard from "@/src/components/ResourcesCard";
 
 export default function ProfilePage() {
   const mockUser = {
@@ -40,12 +41,19 @@ export default function ProfilePage() {
     { id: 9, label: "Природные источники", icon: "/icons/source-nature.png" },
   ];
 
+  const mockResources = [
+    { id: 1, label: "Binance", url: "https://www.binance.com" },
+    { id: 2, label: "Bybit", url: "https://www.bybit.com" },
+    { id: 3, label: "CapTrader", url: "https://www.captrader.com" },
+    { id: 4, label: "Forex", url: "https://www.forex.com" },
+  ];
+
   return (
     <main className="p-10">
       <MainTitle id="profileTitle" />
       <div className="grid grid-cols-12 gap-4">
         {/* ЛЕВАЯ КОЛОНКА */}
-        <div className="col-span-3 space-y-4">
+        <div className="col-span-3 space-y-6">
           <ParticipantCard
             name={mockUser.name}
             age={mockUser.age}
@@ -60,6 +68,7 @@ export default function ProfilePage() {
             job={mockUser.job}
             currentLocation={mockUser.currentLocation}
           />
+          <ResourcesCard resources={mockResources} />
         </div>
 
         <div className="col-span-9 space-y-4">{/* ПРАВАЯ КОЛОНКА */}</div>
