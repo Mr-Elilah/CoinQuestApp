@@ -17,7 +17,7 @@ export default function Header({ children, onBurgerClick }: HeadersProps) {
   const flags: Record<string, string> = { en: "GB", ru: "RU", uk: "UA" };
 
   return (
-    <header className="flex items-center gap-3 py-4 px-6 border-b border-gray-300">
+    <header className="flex items-center gap-3 py-4 px-6 bg-white border-b border-gray-300">
       <button
         aria-label="Open sidebar"
         onClick={onBurgerClick}
@@ -77,11 +77,11 @@ export default function Header({ children, onBurgerClick }: HeadersProps) {
         <HeaderMenu
           trigger={
             <Image
-              src="/images/avatar.png"
+              src="/images/pierce-avatar-header.jpg"
               alt="avatar"
               width={40}
               height={40}
-              className="rounded-full cursor-pointer"
+              className="rounded-full object-cover cursor-pointer"
             />
           }
           content={

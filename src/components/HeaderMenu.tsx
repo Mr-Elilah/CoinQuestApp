@@ -31,7 +31,7 @@ export default function HeaderMenu({
 
       {open && (
         <div
-          className={`absolute mt-2 min-w-[180px] bg-white border rounded shadow-lg z-50 ${
+          className={`absolute min-w-[180px] bg-white border rounded shadow-lg z-50 ${
             align === "right" ? "right-0" : "left-0"
           }`}
         >

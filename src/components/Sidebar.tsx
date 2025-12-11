@@ -34,12 +34,11 @@ export default function Sidebar({
 
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 z-40 h-full w-64 transform
-        bg-gradient-to-b from-[#233044] via-[#0d1626] to-[#233044]
+        className={`bg-gradient-to-b from-[#233044] via-[#0d1626] to-[#233044]
         text-white shadow-lg transition-transform duration-300
-        flex flex-col
+        flex flex-col w-64 z-40
         ${open ? "translate-x-0" : "-translate-x-full"}
-        md:translate-x-0 md:static md:h-screen`}
+        md:translate-x-0 md:static`}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-4 border-b border-white/10">
