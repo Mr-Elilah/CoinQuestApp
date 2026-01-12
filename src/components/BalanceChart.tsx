@@ -1,8 +1,9 @@
+// src/components/BalanceChart.tsx
 "use client";
 
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
-  LineChart,
+  LineChart as ReLineChart,
   Line,
   Area,
   XAxis,
@@ -11,69 +12,206 @@ import {
   CartesianGrid,
   ResponsiveContainer,
 } from "recharts";
+import type { DotProps, TooltipProps } from "recharts";
+import type {
+  Payload,
+  ValueType,
+  NameType,
+} from "recharts/types/component/DefaultTooltipContent";
+import LeftCardWrapper from "./LeftCardWrapper";
 
-import LeftCardWrapper from "@/src/components/LeftCardWrapper";
-import { ChartPoint } from "@/src/utils/chartHelpers";
-
-interface Props {
-  title: string;
-  data: ChartPoint[];
-  total: number;
+type TooltipPayloadItem = {
+  payload: SlotPoint;
+};
+interface IncomingPoint {
+  label: string; // дата
+  value: number;
+}
+interface ChartDotProps {
+  cx?: number;
+  cy?: number;
+  value?: number | null;
+}
+interface SlotPoint {
+  stepLabel: string;
+  realLabel: string;
+  value: number | null;
 }
 
 export default function BalanceChart({
-  title,
-  data,
-  total,
-}: Props): React.ReactElement {
-  // Берём только последние 10 накопленных точек
-  const last10 = data.slice(-10);
-  const offset = data.length - last10.length;
+  title = "Balance",
+  data = [],
+  total = 0,
+}: {
+  title?: string;
+  data: IncomingPoint[];
+  total?: number;
+}) {
+  const SLOTS = 10;
 
-  const visible = last10.map((item, index) => ({
-    ...item,
-    label: `Шаг ${offset + index + 1}`,
-  }));
+  const baseSlots: SlotPoint[] = useMemo(() => {
+    const last = data.slice(-SLOTS);
+    const placeholdersCount = Math.max(0, SLOTS - last.length);
+
+    const filled: SlotPoint[] = last.map((d, i) => ({
+      stepLabel: `Шаг ${i + 1}`,
+      realLabel: d.label,
+      value: d.value,
+    }));
+
+    const placeholders: SlotPoint[] = Array.from({
+      length: placeholdersCount,
+    }).map((_, i) => ({
+      stepLabel: `Шаг ${filled.length + i + 1}`,
+      realLabel: "",
+      value: null,
+    }));
+
+    return [...filled, ...placeholders];
+  }, [data]);
+
+  const realCount = useMemo(
+    () => baseSlots.filter((s) => s.value !== null).length,
+    [baseSlots]
+  );
+
+  const [visibleCount, setVisibleCount] = useState(0);
+
+  useEffect(() => {
+    setVisibleCount(0);
+    if (realCount === 0) return;
+
+    let i = 0;
+    const interval = setInterval(() => {
+      i++;
+      setVisibleCount(i);
+      if (i >= realCount) clearInterval(interval);
+    }, 180);
+
+    return () => clearInterval(interval);
+  }, [realCount]);
+
+  const chartData = useMemo(() => {
+    return baseSlots.map((slot, idx) => {
+      const shouldShow = idx < visibleCount && slot.value !== null;
+
+      return {
+        stepLabel: slot.stepLabel,
+        realLabel: slot.realLabel,
+        value: shouldShow ? slot.value : null,
+      };
+    });
+  }, [baseSlots, visibleCount]);
+
+  // 🔒 Строго типизированный dot
+  const CustomDot = ({ cx, cy, value }: ChartDotProps) => {
+    if (value == null || cx == null || cy == null) return null;
+
+    return (
+      <circle
+        cx={cx}
+        cy={cy}
+        r={4}
+        fill="#ffffff"
+        stroke="#3b82f6"
+        strokeWidth={2}
+      />
+    );
+  };
+
+  function isSlotPoint(value: unknown): value is SlotPoint {
+    return (
+      typeof value === "object" &&
+      value !== null &&
+      "realLabel" in value &&
+      "stepLabel" in value
+    );
+  }
+
+  // 🔒 Строго типизированный tooltip label
+  const tooltipLabelFormatter = (
+    _: unknown,
+    payload: readonly Payload<ValueType, NameType>[]
+  ) => {
+    const raw = payload?.[0]?.payload;
+
+    if (isSlotPoint(raw)) {
+      return raw.realLabel;
+    }
+
+    return "";
+  };
 
   return (
     <LeftCardWrapper title={title}>
-      <div className="relative w-full h-64">
-        <div className="absolute top-2 right-2 text-sm text-gray-400">
-          Итого:
-          <span className="ml-1 font-semibold text-white">
-            {total.toLocaleString()} €
-          </span>
-        </div>
-
-        <ResponsiveContainer>
-          <LineChart data={visible} margin={{ top: 30, right: 40 }}>
+      <div style={{ width: "100%", height: 320 }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <ReLineChart
+            data={chartData}
+            margin={{ top: 8, right: 30, left: 0, bottom: 0 }}
+          >
             <defs>
-              <linearGradient id="balance" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.4} />
+              <linearGradient id="balColor" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.35} />
                 <stop offset="100%" stopColor="#3b82f6" stopOpacity={0} />
               </linearGradient>
             </defs>
 
-            <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
-            <XAxis dataKey="label" />
-            <YAxis width={60} />
-            <Tooltip />
+            <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
 
-            <Area dataKey="value" fill="url(#balance)" stroke="none" />
+            <XAxis
+              dataKey="stepLabel"
+              tick={{ fill: "#888", fontSize: 12 }}
+              axisLine={{ stroke: "#333" }}
+              tickLine={false}
+              interval={0}
+            />
+
+            <YAxis
+              tick={{ fill: "#888", fontSize: 12 }}
+              axisLine={{ stroke: "#333" }}
+              width={70}
+            />
+
+            <Tooltip
+              formatter={(value) =>
+                value == null ? [] : [value, "Сумма" as NameType]
+              }
+              labelFormatter={tooltipLabelFormatter}
+              contentStyle={{
+                background: "#1f2937",
+                border: "none",
+                borderRadius: 8,
+                color: "#fff",
+              }}
+            />
+
+            <Area
+              type="monotone"
+              dataKey="value"
+              stroke="none"
+              fill="url(#balColor)"
+              connectNulls={false}
+              isAnimationActive={false}
+            />
 
             <Line
+              type="monotone"
               dataKey="value"
               stroke="#3b82f6"
               strokeWidth={3}
-              dot={{
-                r: 4,
-                stroke: "#3b82f6",
-                strokeWidth: 2,
-                fill: "#fff",
-              }}
+              dot={CustomDot}
+              activeDot={{ r: 6 }}
+              isAnimationActive
+              animationDuration={700}
+              connectNulls={false}
             />
-          </LineChart>
+          </ReLineChart>
         </ResponsiveContainer>
+
+        <div className="mt-3 text-sm text-gray-700">
+          Всего: <span className="font-semibold">{total}</span>
+        </div>
       </div>
     </LeftCardWrapper>
   );

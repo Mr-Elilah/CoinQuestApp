@@ -85,7 +85,7 @@ export default function ProfilePage() {
 
         <div className="col-span-9 space-y-4">
           {/* ПРАВАЯ КОЛОНКА */}
-          <LineChart />
+
           <BalanceChart title="Путь к цели" data={daily} total={total} />
         </div>
       </div>
