@@ -7,8 +7,20 @@ import MainTitle from "@/src/components/MainTitle";
 import ParticipantCard from "@/src/components/ParticipantCard";
 import ProgressCard from "@/src/components/ProgressCard";
 import ResourcesCard from "@/src/components/ResourcesCard";
+import LineChart from "@/src/components/LineChart";
+import BalanceChart from "@/src/components/BalanceChart";
+import { mockPayments } from "@/src/data/mockPayments";
+import {
+  getTotal,
+  buildMonthlyData,
+  buildDailyData,
+} from "@/src/utils/chartHelpers";
 
 export default function ProfilePage() {
+  const daily = buildDailyData(mockPayments);
+  const monthly = buildMonthlyData(mockPayments);
+  const total = getTotal(mockPayments);
+
   const mockUser = {
     name: "Пирс Броссман",
     age: 72,
@@ -71,7 +83,11 @@ export default function ProfilePage() {
           <ResourcesCard resources={mockResources} />
         </div>
 
-        <div className="col-span-9 space-y-4">{/* ПРАВАЯ КОЛОНКА */}</div>
+        <div className="col-span-9 space-y-4">
+          {/* ПРАВАЯ КОЛОНКА */}
+          <LineChart />
+          <BalanceChart title="Путь к цели" data={daily} total={total} />
+        </div>
       </div>
     </main>
   );
