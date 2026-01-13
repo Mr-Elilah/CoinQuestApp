@@ -12,7 +12,6 @@ import {
   CartesianGrid,
   ResponsiveContainer,
 } from "recharts";
-import type { DotProps, TooltipProps } from "recharts";
 import type {
   Payload,
   ValueType,
@@ -20,32 +19,32 @@ import type {
 } from "recharts/types/component/DefaultTooltipContent";
 import LeftCardWrapper from "./LeftCardWrapper";
 
-type TooltipPayloadItem = {
-  payload: SlotPoint;
-};
 interface IncomingPoint {
   label: string; // дата
   value: number;
 }
+
 interface ChartDotProps {
   cx?: number;
   cy?: number;
   value?: number | null;
 }
+
 interface SlotPoint {
   stepLabel: string;
   realLabel: string;
   value: number | null;
 }
 
+// 🔥 Моковая цель пользователя
+const GOAL_AMOUNT = 30000;
+
 export default function BalanceChart({
   title = "Balance",
   data = [],
-  total = 0,
 }: {
   title?: string;
   data: IncomingPoint[];
-  total?: number;
 }) {
   const SLOTS = 10;
 
@@ -103,7 +102,18 @@ export default function BalanceChart({
     });
   }, [baseSlots, visibleCount]);
 
-  // 🔒 Строго типизированный dot
+  // 👉 Текущая сумма = последнее реальное значение
+  const currentTotal = useMemo(() => {
+    const last = data[data.length - 1];
+    return last ? last.value : 0;
+  }, [data]);
+
+  const GOAL_AMOUNT = 30000;
+
+  const progressPercent = useMemo(() => {
+    return (currentTotal / GOAL_AMOUNT) * 100;
+  }, [currentTotal]);
+
   const CustomDot = ({ cx, cy, value }: ChartDotProps) => {
     if (value == null || cx == null || cy == null) return null;
 
@@ -128,27 +138,41 @@ export default function BalanceChart({
     );
   }
 
-  // 🔒 Строго типизированный tooltip label
   const tooltipLabelFormatter = (
     _: unknown,
     payload: readonly Payload<ValueType, NameType>[]
   ) => {
     const raw = payload?.[0]?.payload;
-
-    if (isSlotPoint(raw)) {
-      return raw.realLabel;
-    }
-
+    if (isSlotPoint(raw)) return raw.realLabel;
     return "";
   };
 
   return (
     <LeftCardWrapper title={title}>
-      <div style={{ width: "100%", height: 320 }}>
+      <div className="relative" style={{ width: "100%", height: 320 }}>
+        {/* 🔥 Индикатор цели — внутри чарта */}
+        <div className="absolute -top-10 right-4 z-10 text-sm text-gray-700">
+          <div className="relative group inline-block">
+            <span className="font-semibold text-gray-900 cursor-default">
+              {currentTotal.toLocaleString()}
+            </span>
+
+            {/* Tooltip */}
+            <div className="pointer-events-none absolute right-0 top-full mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="bg-gray-900 text-white text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap">
+                {progressPercent.toFixed(1)}%
+              </div>
+            </div>
+          </div>
+
+          <span className="mx-1">/</span>
+          <span className="text-gray-500">{GOAL_AMOUNT.toLocaleString()}</span>
+        </div>
+
         <ResponsiveContainer width="100%" height="100%">
           <ReLineChart
             data={chartData}
-            margin={{ top: 8, right: 30, left: 0, bottom: 0 }}
+            margin={{ top: 24, right: 30, left: 0, bottom: 0 }}
           >
             <defs>
               <linearGradient id="balColor" x1="0" y1="0" x2="0" y2="1">
@@ -208,10 +232,6 @@ export default function BalanceChart({
             />
           </ReLineChart>
         </ResponsiveContainer>
-
-        <div className="mt-3 text-sm text-gray-700">
-          Всего: <span className="font-semibold">{total}</span>
-        </div>
       </div>
     </LeftCardWrapper>
   );
