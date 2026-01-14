@@ -21,6 +21,8 @@ export default function ProfilePage() {
   const monthly = buildMonthlyData(mockPayments);
   const total = getTotal(mockPayments);
 
+  const GOAL_AMOUNT = 30_000;
+
   const mockUser = {
     name: "Пирс Броссман",
     age: 72,
@@ -86,7 +88,12 @@ export default function ProfilePage() {
         <div className="col-span-9 space-y-4">
           {/* ПРАВАЯ КОЛОНКА */}
 
-          <BalanceChart title="Путь к цели" data={daily} total={total} />
+          <BalanceChart
+            title="Путь к цели"
+            points={daily}
+            currentTotal={total}
+            goalAmount={GOAL_AMOUNT}
+          />
         </div>
       </div>
     </main>
