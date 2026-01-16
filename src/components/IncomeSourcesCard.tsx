@@ -1,11 +1,6 @@
 import React from "react";
 import LeftCardWrapper from "./LeftCardWrapper";
-
-export interface IncomeSource {
-  id: number;
-  label: string;
-}
-
+import { IncomeSource } from "@/src/domain/source";
 export interface IncomeSourcesCardProps {
   sources: IncomeSource[];
 }

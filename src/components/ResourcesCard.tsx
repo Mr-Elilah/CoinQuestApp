@@ -1,14 +1,9 @@
 import React from "react";
 import LeftCardWrapper from "./LeftCardWrapper";
 import { FiExternalLink } from "react-icons/fi";
+import { Resource } from "@/src/domain/resource";
 
-export interface Resource {
-  id: number;
-  label: string;
-  url?: string;
-}
-
-export interface ResourcesCardProps {
+interface ResourcesCardProps {
   resources: Resource[];
 }
 
@@ -26,10 +21,10 @@ export default function ResourcesCard({ resources }: ResourcesCardProps) {
                 rel="noopener noreferrer"
                 className="text-blue-600 hover:underline"
               >
-                {item.label}
+                {item.title}
               </a>
             ) : (
-              <span>{item.label}</span>
+              <span>{item.title}</span>
             )}
           </li>
         ))}

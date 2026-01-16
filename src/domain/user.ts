@@ -2,9 +2,10 @@ export interface User {
   id: string;
   name: string;
   age: number;
-  avatar: string;
+  avatarUrl: string;
   profession: string;
-  birthPlace: string;
-  currentLocation: string;
-  workplace: string;
+
+  birthPlace?: string;
+  currentLocation?: string;
+  workplace?: string;
 }

@@ -1,7 +1,7 @@
 import { Achievement } from "@/src/domain/achievement";
 
 export const mockAchievements: Achievement[] = [
-  { id: 1, title: "1-й уровень", icon: "/icons/LvL.png" },
-  { id: 2, title: "Первая цель", icon: "/icons/goal-set.jpg" },
-  { id: 3, title: "Первые сбережения", icon: "/icons/saving.png" },
+  { id: "ach-1", title: "1-й уровень", iconUrl: "/icons/LvL.png" },
+  { id: "ach-2", title: "Первая цель", iconUrl: "/icons/goal-set.jpg" },
+  { id: "ach-3", title: "Первые сбережения", iconUrl: "/icons/saving.png" },
 ];

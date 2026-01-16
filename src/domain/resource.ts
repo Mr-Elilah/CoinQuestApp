@@ -1,5 +1,5 @@
 export interface Resource {
-  id: number;
-  label: string;
+  id: string;
+  title: string;
   url: string;
 }

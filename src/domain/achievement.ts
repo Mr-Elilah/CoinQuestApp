@@ -1,5 +1,5 @@
 export interface Achievement {
-  id: number;
+  id: string;
   title: string;
-  icon: string;
+  iconUrl: string;
 }

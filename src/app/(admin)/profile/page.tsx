@@ -7,7 +7,6 @@ import MainTitle from "@/src/components/MainTitle";
 import ParticipantCard from "@/src/components/ParticipantCard";
 import ProgressCard from "@/src/components/ProgressCard";
 import ResourcesCard from "@/src/components/ResourcesCard";
-import LineChart from "@/src/components/LineChart";
 import BalanceChart from "@/src/components/BalanceChart";
 import { mockPayments } from "@/src/data/mockPayments";
 import {
@@ -15,52 +14,38 @@ import {
   buildMonthlyData,
   buildDailyData,
 } from "@/src/utils/chartHelpers";
+import { User } from "@/src/domain/user";
+import { Achievement } from "@/src/domain/achievement";
+
+import { getUserAchievements } from "@/src/services/achievement.service";
+import { getCurrentUser } from "@/src/services/user.service";
+import { useEffect, useState } from "react";
+
+import { IncomeSource } from "@/src/domain/source";
+import { getSources } from "@/src/services/source.service";
+import { Resource } from "@/src/domain/resource";
+import { getResources } from "@/src/services/resource.service";
 
 export default function ProfilePage() {
+  const GOAL_AMOUNT = 30_000;
+
+  const [user, setUser] = useState<User | null>(null);
+  const [achievements, setAchievements] = useState<Achievement[]>([]);
+  const [incomeSources, setIncomeSources] = useState<IncomeSource[]>([]);
+  const [resources, setResources] = useState<Resource[]>([]);
+
+  useEffect(() => {
+    getCurrentUser().then(setUser);
+    getUserAchievements().then(setAchievements);
+    getSources().then(setIncomeSources);
+    getResources().then(setResources);
+  }, []);
+
+  if (!user) return null;
+
   const daily = buildDailyData(mockPayments);
   const monthly = buildMonthlyData(mockPayments);
   const total = getTotal(mockPayments);
-
-  const GOAL_AMOUNT = 30_000;
-
-  const mockUser = {
-    name: "Пирс Броссман",
-    age: 72,
-    profession: "Актер",
-    avatar: "/images/pierce-avatar.webp",
-    birthPlace: "Лос-Анджелес, США",
-    currentLocation: "Нью-Йорк, США",
-    job: "NBC",
-  };
-
-  const mockAchievements = [
-    { id: 1, title: "1-й уровень", icon: "/icons/LvL.png" },
-    { id: 2, title: "Первая цель", icon: "/icons/goal-set.jpg" },
-    { id: 3, title: "Первые сбережения", icon: "/icons/saving.png" },
-  ];
-
-  const mockSources = [
-    { id: 1, label: "Работа" },
-    { id: 2, label: "Гос. выплаты" },
-    { id: 3, label: "Дивиденды" },
-    { id: 4, label: "Проценты" },
-    { id: 5, label: "Рента" },
-    { id: 6, label: "Роялти" },
-    { id: 7, label: "Бизнес" },
-    {
-      id: 8,
-      label: "Интернет-активность",
-      icon: "/icons/source-internet.png",
-    },
-    { id: 9, label: "Природные источники", icon: "/icons/source-nature.png" },
-  ];
-
-  const mockResources = [
-    { id: 1, label: "Binance", url: "https://www.binance.com" },
-    { id: 2, label: "Bybit", url: "https://www.bybit.com" },
-    { id: 3, label: "CapTrader", url: "https://www.captrader.com" },
-    { id: 4, label: "Forex", url: "https://www.forex.com" },
-  ];
 
   return (
     <main className="p-10">
@@ -68,21 +53,12 @@ export default function ProfilePage() {
       <div className="grid grid-cols-12 gap-4">
         {/* ЛЕВАЯ КОЛОНКА */}
         <div className="col-span-3 space-y-6">
-          <ParticipantCard
-            name={mockUser.name}
-            age={mockUser.age}
-            profession={mockUser.profession}
-            avatar={mockUser.avatar}
-          />
-          <AchievementsCard achievements={mockAchievements} />
+          <ParticipantCard user={user} />
+          <AchievementsCard achievements={achievements} />
           <ProgressCard />
-          <IncomeSourcesCard sources={mockSources} />
-          <AboutCard
-            birthPlace={mockUser.birthPlace}
-            job={mockUser.job}
-            currentLocation={mockUser.currentLocation}
-          />
-          <ResourcesCard resources={mockResources} />
+          <IncomeSourcesCard sources={incomeSources} />
+          <AboutCard user={user} />
+          <ResourcesCard resources={resources} />
         </div>
 
         <div className="col-span-9 space-y-4">
