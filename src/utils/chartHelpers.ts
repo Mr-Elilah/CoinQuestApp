@@ -1,4 +1,4 @@
-import { Payment } from "@/src/data/mockPayments";
+import { Payment } from "@/src/data/mock/payments.mock";
 
 export interface ChartPoint {
   label: string;
@@ -17,14 +17,14 @@ export function accumulate(data: ChartPoint[]) {
 // Days
 export function buildDailyData(payments: Payment[]) {
   const sorted = [...payments].sort(
-    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
   );
 
   return accumulate(
     sorted.map((p) => ({
       label: p.date.slice(5),
       value: p.amount,
-    }))
+    })),
   );
 }
 
@@ -43,7 +43,7 @@ export function buildMonthlyData(payments: Payment[]) {
     Array.from(map.entries()).map(([label, value]) => ({
       label,
       value,
-    }))
+    })),
   );
 }
 

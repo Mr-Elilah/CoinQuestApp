@@ -1,28 +1,17 @@
 import React from "react";
 import LeftCardWrapper from "./LeftCardWrapper";
 import Image from "next/image";
+import { Progress } from "../domain/progress";
 
 export interface ProgressCardProps {
-  gold: number;
-  silver: number;
-  copper: number;
-  lessonsTotal: number;
-  lessonsCompleted: number;
-  xpProgress: number;
+  progress: Progress;
   goalProgress: number;
 }
 
-export default function ProgressCard() {
-  const data: ProgressCardProps = {
-    gold: 1,
-    silver: 5,
-    copper: 28,
-    lessonsTotal: 7,
-    lessonsCompleted: 3,
-    xpProgress: 0.45,
-    goalProgress: 0.25,
-  };
-
+export default function ProgressCard(
+  progress,
+  goalProgress,
+): ProgressCardProps {
   return (
     <LeftCardWrapper title="Прогресс">
       <div className="flex flex-col gap-6">
@@ -42,7 +31,7 @@ export default function ProgressCard() {
                 width={30}
                 height={30}
               />
-              <span>{data.gold}</span>
+              <span>{progress.gold}</span>
             </div>
 
             <div className="flex items-center gap-1">
@@ -52,7 +41,7 @@ export default function ProgressCard() {
                 width={30}
                 height={30}
               />
-              <span>{data.silver}</span>
+              <span>{progress.silver}</span>
             </div>
 
             <div className="flex items-center gap-1">
@@ -62,7 +51,7 @@ export default function ProgressCard() {
                 width={30}
                 height={30}
               />
-              <span>{data.copper}</span>
+              <span>{progress.copper}</span>
             </div>
           </div>
         </div>
@@ -73,7 +62,7 @@ export default function ProgressCard() {
           <div className="flex-1 h-3 bg-orange-200 rounded-full overflow-hidden">
             <div
               className="h-full bg-orange-500"
-              style={{ width: `${data.xpProgress * 100}%` }}
+              style={{ width: `${progress.xpProgress * 100}%` }}
             />
           </div>
         </div>
@@ -89,11 +78,13 @@ export default function ProgressCard() {
           />
 
           <div className="flex gap-1 flex-1">
-            {Array.from({ length: data.lessonsTotal }).map((_, i) => (
+            {Array.from({ length: progress.lessonsTotal }).map((_, i) => (
               <div
                 key={i}
                 className={`lesson-block ${
-                  i < data.lessonsCompleted ? "bg-green-600" : "bg-green-200"
+                  i < progress.lessonsCompleted
+                    ? "bg-green-600"
+                    : "bg-green-200"
                 }`}
               />
             ))}
@@ -112,7 +103,7 @@ export default function ProgressCard() {
           <div className="flex-1 h-3 bg-blue-200 rounded-full overflow-hidden">
             <div
               className="h-full bg-blue-600"
-              style={{ width: `${data.goalProgress * 100}%` }}
+              style={{ width: `${goalProgress * 100}%` }}
             />
           </div>
         </div>

@@ -36,6 +36,7 @@ interface BalanceChartProps {
   points: ChartPoint[];
   currentTotal: number;
   goalAmount: number;
+  progressPercent: number;
 }
 
 /* ===================== COMPONENT ===================== */
@@ -45,6 +46,7 @@ export default function BalanceChart({
   points,
   currentTotal,
   goalAmount,
+  progressPercent,
 }: BalanceChartProps) {
   const SLOTS = 10;
 
@@ -65,7 +67,7 @@ export default function BalanceChart({
         stepLabel: `Шаг ${filled.length + i + 1}`,
         realLabel: "",
         value: null,
-      })
+      }),
     );
 
     return [...filled, ...placeholders];
@@ -75,7 +77,7 @@ export default function BalanceChart({
 
   const realCount = useMemo(
     () => baseSlots.filter((s) => s.value !== null).length,
-    [baseSlots]
+    [baseSlots],
   );
 
   const [visibleCount, setVisibleCount] = useState(0);
@@ -109,16 +111,11 @@ export default function BalanceChart({
 
   const tooltipLabelFormatter = (
     _: unknown,
-    payload: readonly Payload<ValueType, NameType>[]
+    payload: readonly Payload<ValueType, NameType>[],
   ) => {
     const raw = payload?.[0]?.payload;
     return isSlotPoint(raw) ? raw.realLabel : "";
   };
-
-  const progressPercent = useMemo(() => {
-    if (goalAmount === 0) return 0;
-    return (currentTotal / goalAmount) * 100;
-  }, [currentTotal, goalAmount]);
 
   /* ===================== RENDER ===================== */
 
