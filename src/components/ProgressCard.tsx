@@ -8,10 +8,10 @@ export interface ProgressCardProps {
   goalProgress: number;
 }
 
-export default function ProgressCard(
+export default function ProgressCard({
   progress,
   goalProgress,
-): ProgressCardProps {
+}: ProgressCardProps) {
   return (
     <LeftCardWrapper title="Прогресс">
       <div className="flex flex-col gap-6">
@@ -103,7 +103,7 @@ export default function ProgressCard(
           <div className="flex-1 h-3 bg-blue-200 rounded-full overflow-hidden">
             <div
               className="h-full bg-blue-600"
-              style={{ width: `${goalProgress * 100}%` }}
+              style={{ width: `${goalProgress}%` }}
             />
           </div>
         </div>

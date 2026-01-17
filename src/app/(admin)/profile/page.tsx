@@ -36,7 +36,7 @@ export default function ProfilePage() {
   const [resources, setResources] = useState<Resource[]>([]);
   const [goal, setGoal] = useState<Goal | null>(null);
   const [payments, setPayments] = useState<Payment[]>([]);
-  const [progress, setProgress] = useState<Progress>([]);
+  const [progress, setProgress] = useState<Progress | null>(null);
 
   useEffect(() => {
     getCurrentUser().then(setUser);
@@ -48,7 +48,7 @@ export default function ProfilePage() {
     getUserProgress().then(setProgress);
   }, []);
 
-  if (!user || !goal) return null;
+  if (!user || !goal || !progress) return null;
 
   const total = calculateTotal(payments);
   const daily = buildDailyData(payments);
