@@ -17,13 +17,9 @@ import type {
   NameType,
 } from "recharts/types/component/DefaultTooltipContent";
 import LeftCardWrapper from "./LeftCardWrapper";
-
+import { ChartPoint } from "../utils/chartHelpers";
+import TooltipUi from "./ui/TooltipUi";
 /* ===================== TYPES ===================== */
-
-interface ChartPoint {
-  label: string;
-  value: number;
-}
 
 interface SlotPoint {
   stepLabel: string;
@@ -32,7 +28,7 @@ interface SlotPoint {
 }
 
 interface BalanceChartProps {
-  title?: string;
+  title: React.ReactNode;
   points: ChartPoint[];
   currentTotal: number;
   goalAmount: number;
@@ -42,7 +38,7 @@ interface BalanceChartProps {
 /* ===================== COMPONENT ===================== */
 
 export default function BalanceChart({
-  title = "Balance",
+  title,
   points,
   currentTotal,
   goalAmount,
@@ -70,7 +66,15 @@ export default function BalanceChart({
       }),
     );
 
-    return [...filled, ...placeholders];
+    return [
+      {
+        stepLabel: "",
+        realLabel: "",
+        value: 0,
+      },
+      ...filled,
+      ...placeholders,
+    ];
   }, [points]);
 
   /* ---------- animation ---------- */
@@ -117,6 +121,14 @@ export default function BalanceChart({
     return isSlotPoint(raw) ? raw.realLabel : "";
   };
 
+  const yMax = useMemo(() => {
+    if (goalAmount === 0) return undefined;
+
+    const padding = goalAmount * 0.01;
+    const softMax = currentTotal + padding;
+
+    return Math.min(goalAmount, softMax);
+  }, [currentTotal, goalAmount]);
   /* ===================== RENDER ===================== */
 
   return (
@@ -124,12 +136,11 @@ export default function BalanceChart({
       <div className="relative w-full h-[320px]">
         {/* top-right summary */}
         <div className="absolute -top-2 right-4 z-10 text-sm text-gray-700">
-          <span
-            className="font-semibold text-gray-900 cursor-default"
-            title={`${progressPercent.toFixed(1)}%`}
-          >
-            {currentTotal.toLocaleString()}
-          </span>
+          <TooltipUi content={`${progressPercent.toFixed(1)}%`}>
+            <span className="font-semibold text-gray-900 cursor-default">
+              {currentTotal.toLocaleString()}
+            </span>
+          </TooltipUi>
           <span className="text-gray-500">
             {" "}
             / {goalAmount.toLocaleString()}
@@ -157,7 +168,11 @@ export default function BalanceChart({
               interval={0}
             />
 
-            <YAxis tick={{ fill: "#888", fontSize: 12 }} width={70} />
+            <YAxis
+              domain={yMax ? [0, yMax] : undefined}
+              tick={{ fill: "#888", fontSize: 12 }}
+              width={70}
+            />
 
             <Tooltip
               formatter={(value) =>

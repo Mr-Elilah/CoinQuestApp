@@ -1,4 +1,4 @@
-import { Payment } from "@/src/data/mock/payments.mock";
+import { Payment } from "@/src/domain/finance";
 
 export interface ChartPoint {
   label: string;

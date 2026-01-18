@@ -73,7 +73,12 @@ export default function ProfilePage() {
           {/* ПРАВАЯ КОЛОНКА */}
 
           <BalanceChart
-            title="Путь к цели"
+            title={
+              <>
+                Путь к цели :{" "}
+                <span className="text-gray-600 font-bold">{goal.title}</span>
+              </>
+            }
             points={daily}
             currentTotal={total}
             goalAmount={goal.targetAmount}
