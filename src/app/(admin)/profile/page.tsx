@@ -58,7 +58,7 @@ export default function ProfilePage() {
   return (
     <main className="p-10">
       <MainTitle id="profileTitle" />
-      <div className="grid grid-cols-12 gap-4">
+      <div className="grid grid-cols-12 gap-4 min-w-275">
         {/* ЛЕВАЯ КОЛОНКА */}
         <div className="col-span-3 space-y-6">
           <ParticipantCard user={user} />
@@ -76,7 +76,7 @@ export default function ProfilePage() {
             title={
               <>
                 Путь к цели :{" "}
-                <span className="text-gray-600 font-bold">{goal.title}</span>
+                <span className="text-blue-700 font-bold">{goal.title}</span>
               </>
             }
             points={daily}

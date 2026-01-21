@@ -139,7 +139,7 @@ export default function BalanceChart({
     <LeftCardWrapper title={title}>
       <div className="relative w-full h-[320px]">
         {/* top-right summary */}
-        <div className="absolute -top-2 right-4 z-10 text-sm text-gray-700">
+        <div className="absolute -top-10 right-4 z-10 text-sm text-gray-700">
           <TooltipUi content={`${progressPercent.toFixed(1)}%`}>
             <span className="font-semibold text-gray-900 cursor-default">
               {currentTotal.toLocaleString()}
