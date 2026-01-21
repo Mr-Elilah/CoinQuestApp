@@ -11,7 +11,7 @@ interface TooltipProps {
 export default function TooltipUi({
   content,
   children,
-  delay = 300,
+  delay = 250,
 }: TooltipProps) {
   const [visible, setVisible] = useState(false);
   let timeout: NodeJS.Timeout;

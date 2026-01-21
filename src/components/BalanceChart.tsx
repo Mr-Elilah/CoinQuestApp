@@ -24,7 +24,8 @@ import TooltipUi from "./ui/TooltipUi";
 interface SlotPoint {
   stepLabel: string;
   realLabel: string;
-  value: number | null;
+  total: number | null;
+  amount: number | null;
 }
 
 interface BalanceChartProps {
@@ -55,14 +56,16 @@ export default function BalanceChart({
     const filled = last.map((p, i) => ({
       stepLabel: `Шаг ${i + 1}`,
       realLabel: p.label,
-      value: p.value,
+      total: p.total,
+      amount: p.amount,
     }));
 
     const placeholders = Array.from({ length: placeholdersCount }).map(
       (_, i) => ({
         stepLabel: `Шаг ${filled.length + i + 1}`,
         realLabel: "",
-        value: null,
+        total: null,
+        amount: null,
       }),
     );
 
@@ -70,7 +73,8 @@ export default function BalanceChart({
       {
         stepLabel: "",
         realLabel: "",
-        value: 0,
+        total: 0,
+        amount: null,
       },
       ...filled,
       ...placeholders,
@@ -80,7 +84,7 @@ export default function BalanceChart({
   /* ---------- animation ---------- */
 
   const realCount = useMemo(
-    () => baseSlots.filter((s) => s.value !== null).length,
+    () => baseSlots.filter((s) => s.total !== null).length,
     [baseSlots],
   );
 
@@ -103,7 +107,7 @@ export default function BalanceChart({
   const chartData = useMemo(() => {
     return baseSlots.map((slot, idx) => ({
       ...slot,
-      value: idx < visibleCount ? slot.value : null,
+      total: idx < visibleCount ? slot.total : null,
     }));
   }, [baseSlots, visibleCount]);
 
@@ -171,13 +175,18 @@ export default function BalanceChart({
             <YAxis
               domain={yMax ? [0, yMax] : undefined}
               tick={{ fill: "#888", fontSize: 12 }}
-              width={70}
+              width={55}
             />
 
             <Tooltip
-              formatter={(value) =>
-                value == null ? [] : [value, "Сумма" as NameType]
-              }
+              formatter={(value, name) => {
+                if (value == null) return [];
+                const label =
+                  name === "amount"
+                    ? ("Взнос" as NameType)
+                    : ("Сумма" as NameType);
+                return [value, label];
+              }}
               labelFormatter={tooltipLabelFormatter}
               contentStyle={{
                 background: "#1f2937",
@@ -189,7 +198,7 @@ export default function BalanceChart({
 
             <Area
               type="monotone"
-              dataKey="value"
+              dataKey="amount"
               stroke="none"
               fill="url(#balColor)"
               connectNulls={false}
@@ -198,7 +207,7 @@ export default function BalanceChart({
 
             <Line
               type="monotone"
-              dataKey="value"
+              dataKey="total"
               stroke="#3b82f6"
               strokeWidth={3}
               dot={({ cx, cy, value }) =>

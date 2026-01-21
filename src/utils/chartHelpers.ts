@@ -1,35 +1,32 @@
 import { Payment } from "@/src/domain/finance";
 
 export interface ChartPoint {
-  label: string;
-  value: number;
+  label: string; // дата или месяц
+  amount: number; // сумма одного платежа
+  total: number; // накопительная сумма на этот момент
 }
 
-export function accumulate(data: ChartPoint[]) {
-  let total = 0;
-
-  return data.map((item) => {
-    total += item.value;
-    return { ...item, value: total };
-  });
-}
-
-// Days
-export function buildDailyData(payments: Payment[]) {
+// ---------- Days ----------
+export function buildDailyData(payments: Payment[]): ChartPoint[] {
   const sorted = [...payments].sort(
     (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
   );
 
-  return accumulate(
-    sorted.map((p) => ({
+  let runningTotal = 0;
+
+  return sorted.map((p) => {
+    runningTotal += p.amount;
+
+    return {
       label: p.date.slice(5),
-      value: p.amount,
-    })),
-  );
+      amount: p.amount,
+      total: runningTotal,
+    };
+  });
 }
 
-// Months
-export function buildMonthlyData(payments: Payment[]) {
+// ---------- Months ----------
+export function buildMonthlyData(payments: Payment[]): ChartPoint[] {
   const map = new Map<string, number>();
 
   payments.forEach((p) => {
@@ -39,15 +36,15 @@ export function buildMonthlyData(payments: Payment[]) {
     map.set(key, (map.get(key) ?? 0) + p.amount);
   });
 
-  return accumulate(
-    Array.from(map.entries()).map(([label, value]) => ({
-      label,
-      value,
-    })),
-  );
-}
+  let runningTotal = 0;
 
-// Total
-export function getTotal(payments: Payment[]) {
-  return payments.reduce((sum, p) => sum + p.amount, 0);
+  return Array.from(map.entries()).map(([label, amount]) => {
+    runningTotal += amount;
+
+    return {
+      label,
+      amount,
+      total: runningTotal,
+    };
+  });
 }
