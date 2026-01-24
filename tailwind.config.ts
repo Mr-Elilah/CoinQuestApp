@@ -7,5 +7,5 @@ module.exports = {
   theme: {
     extend: {},
   },
-  darkMode: "media", // или 'class', если хочешь управлять вручную
+  darkMode: "class", // или 'class', если хочешь управлять вручную
 };

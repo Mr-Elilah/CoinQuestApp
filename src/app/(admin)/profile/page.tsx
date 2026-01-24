@@ -1,6 +1,8 @@
 "use client";
 
+import useChartMode from "@/src/hooks/useChartMode";
 import { useEffect, useState } from "react";
+
 import AboutCard from "@/src/components/AboutCard";
 import AchievementsCard from "@/src/components/AchievementsCard";
 import IncomeSourcesCard from "@/src/components/IncomeSourcesCard";
@@ -9,7 +11,6 @@ import ParticipantCard from "@/src/components/ParticipantCard";
 import ProgressCard from "@/src/components/ProgressCard";
 import ResourcesCard from "@/src/components/ResourcesCard";
 import BalanceChart from "@/src/components/BalanceChart";
-import { buildMonthlyData, buildDailyData } from "@/src/utils/chartHelpers";
 import { User } from "@/src/domain/user";
 import { Achievement } from "@/src/domain/achievement";
 import { IncomeSource } from "@/src/domain/source";
@@ -28,8 +29,13 @@ import {
 } from "@/src/services/finance.service";
 import { Progress } from "@/src/domain/progress";
 import { getUserProgress } from "@/src/services/progress.service";
+import { buildChartData } from "@/src/utils/chartHelpers";
+import ChartModeSwitcher from "@/src/components/ChartModeSwitcher";
+import ThemeSwitcher from "@/src/components/ThemeSwitcher";
 
 export default function ProfilePage() {
+  const { mode: chartMode, setMode: setChartMode } = useChartMode();
+
   const [user, setUser] = useState<User | null>(null);
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [incomeSources, setIncomeSources] = useState<IncomeSource[]>([]);
@@ -51,13 +57,13 @@ export default function ProfilePage() {
   if (!user || !goal || !progress) return null;
 
   const total = calculateTotal(payments);
-  const daily = buildDailyData(payments);
-  const monthly = buildMonthlyData(payments);
   const progressPercent = calculateProgressPercent(total, goal);
+  const chartPoints = buildChartData(chartMode, payments);
 
   return (
     <main className="p-10">
       <MainTitle id="profileTitle" />
+      <ThemeSwitcher />
       <div className="grid grid-cols-12 gap-4 min-w-275">
         {/* ЛЕВАЯ КОЛОНКА */}
         <div className="col-span-3 space-y-6">
@@ -79,10 +85,14 @@ export default function ProfilePage() {
                 <span className="text-blue-700 font-bold">{goal.title}</span>
               </>
             }
-            points={daily}
+            points={chartPoints}
             currentTotal={total}
             goalAmount={goal.targetAmount}
             progressPercent={progressPercent}
+            mode={chartMode}
+            headerCenter={
+              <ChartModeSwitcher value={chartMode} onChange={setChartMode} />
+            }
           />
         </div>
       </div>

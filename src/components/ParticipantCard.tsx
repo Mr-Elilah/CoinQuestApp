@@ -6,9 +6,7 @@ export interface ParticipantCardProps {
   user: User;
 }
 
-export default function ParticipantCard({
- user
-}: ParticipantCardProps) {
+export default function ParticipantCard({ user }: ParticipantCardProps) {
   return (
     <LeftCardWrapper title="Участник">
       <div className="flex flex-col items-center text-center">
@@ -22,9 +20,11 @@ export default function ParticipantCard({
         </div>
 
         <h3 className="font-semibold">{user.name} </h3>
-        <p className="text-sm text-gray-600 mt-1"> Возраст: {user.age}</p>
-        <p className="text-sm text-gray-600 mt-1">
+        <p className="text-sm text-gray-600 dark:text-gray-300 mt-1 ">
           {" "}
+          Возраст: {user.age}
+        </p>
+        <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
           Профессия: {user.profession}
         </p>
       </div>

@@ -12,15 +12,15 @@ export default function AboutCard({ user }: AboutCardProps) {
     <LeftCardWrapper title="Инфо">
       <div className="flex items-center gap-3 mb-1">
         <FiHome className="text-gray-600" />
-        <span className="text-blue-900">{user.birthPlace}</span>
+        <span className="text-blue-700">{user.birthPlace}</span>
       </div>
       <div className="flex items-center gap-3 mb-1">
         <FiBriefcase className="text-gray-600" />
-        <span className="text-blue-900">{user.workplace}</span>
+        <span className="text-blue-700">{user.workplace}</span>
       </div>
       <div className="flex items-center gap-3 mb-1">
         <FiMapPin className="text-gray-600" />
-        <span className="text-blue-900">{user.currentLocation}</span>
+        <span className="text-blue-700">{user.currentLocation}</span>
       </div>
     </LeftCardWrapper>
   );

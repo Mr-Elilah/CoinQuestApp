@@ -19,6 +19,7 @@ import type {
 import LeftCardWrapper from "./LeftCardWrapper";
 import { ChartPoint } from "../utils/chartHelpers";
 import TooltipUi from "./ui/TooltipUi";
+import { ChartMode } from "../types/chart";
 /* ===================== TYPES ===================== */
 
 interface SlotPoint {
@@ -34,6 +35,8 @@ interface BalanceChartProps {
   currentTotal: number;
   goalAmount: number;
   progressPercent: number;
+  mode: ChartMode;
+  headerCenter?: React.ReactNode;
 }
 
 /* ===================== COMPONENT ===================== */
@@ -44,6 +47,8 @@ export default function BalanceChart({
   currentTotal,
   goalAmount,
   progressPercent,
+  mode,
+  headerCenter,
 }: BalanceChartProps) {
   const SLOTS = 10;
 
@@ -52,9 +57,10 @@ export default function BalanceChart({
   const baseSlots: SlotPoint[] = useMemo(() => {
     const last = points.slice(-SLOTS);
     const placeholdersCount = Math.max(0, SLOTS - last.length);
-
+    const stepPrefix =
+      mode === "steps" ? "Шаг" : mode === "weeks" ? "Неделя" : "Месяц";
     const filled = last.map((p, i) => ({
-      stepLabel: `Шаг ${i + 1}`,
+      stepLabel: `${stepPrefix} \u00A0 ${i + 1}`,
       realLabel: p.label,
       total: p.total,
       amount: p.amount,
@@ -62,7 +68,7 @@ export default function BalanceChart({
 
     const placeholders = Array.from({ length: placeholdersCount }).map(
       (_, i) => ({
-        stepLabel: `Шаг ${filled.length + i + 1}`,
+        stepLabel: `${stepPrefix} \u00A0 ${filled.length + i + 1}`,
         realLabel: "",
         total: null,
         amount: null,
@@ -79,7 +85,7 @@ export default function BalanceChart({
       ...filled,
       ...placeholders,
     ];
-  }, [points]);
+  }, [points, mode]);
 
   /* ---------- animation ---------- */
 
@@ -136,25 +142,39 @@ export default function BalanceChart({
   /* ===================== RENDER ===================== */
 
   return (
-    <LeftCardWrapper title={title}>
+    <LeftCardWrapper
+      title={
+        <div className="relative flex items-center">
+          {/* ЛЕВАЯ ЗОНА */}
+          <div className="flex-1">{title}</div>
+
+          {/* ЦЕНТР */}
+          {headerCenter && (
+            <div className="absolute left-1/2 -translate-x-1/2">
+              {headerCenter}
+            </div>
+          )}
+
+          {/* ПРАВАЯ ЗОНА (пусто, но держит баланс) */}
+          <div className="flex-1" />
+        </div>
+      }
+    >
       <div className="relative w-full h-[320px]">
         {/* top-right summary */}
         <div className="absolute -top-10 right-4 z-10 text-sm text-gray-700">
           <TooltipUi content={`${progressPercent.toFixed(1)}%`}>
-            <span className="font-semibold text-gray-900 cursor-default">
+            <span className="font-semibold text-gray-900 dark:text-gray-400 cursor-default pr-1">
               {currentTotal.toLocaleString()}
             </span>
           </TooltipUi>
-          <span className="text-gray-500">
-            {" "}
-            / {goalAmount.toLocaleString()}
-          </span>
+          <span className="text-gray-500">/ {goalAmount.toLocaleString()}</span>
         </div>
 
         <ResponsiveContainer width="100%" height="100%">
           <ReLineChart
             data={chartData}
-            margin={{ top: 24, right: 30, left: 0, bottom: 0 }}
+            margin={{ top: 24, right: 35, left: 0, bottom: 0 }}
           >
             <defs>
               <linearGradient id="balColor" x1="0" y1="0" x2="0" y2="1">
@@ -169,6 +189,7 @@ export default function BalanceChart({
               dataKey="stepLabel"
               tick={{ fill: "#888", fontSize: 12 }}
               tickLine={false}
+              minTickGap={12}
               interval={0}
             />
 

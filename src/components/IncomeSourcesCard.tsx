@@ -13,7 +13,7 @@ export default function IncomeSourcesCard({ sources }: IncomeSourcesCardProps) {
           <span
             key={item.id}
             className="
-                  py-2 px-3 bg-gray-200 dark:bg-gray-700 rounded-md text-xs text-gray-700 font-semibold cursor-pointer transition hover:bg-blue-600 hover:text-white"
+                  py-2 px-3 bg-gray-200 dark:bg-blue-600 dark:text-gray-300 rounded-md text-xs text-gray-700 font-semibold cursor-pointer transition hover:bg-blue-600 hover:text-white"
           >
             {item.label}
           </span>
