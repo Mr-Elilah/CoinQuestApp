@@ -1,14 +1,29 @@
 import { Payment } from "@/src/domain/finance";
 import { startOfWeek, format } from "date-fns";
 import { ChartMode } from "@/src/types/chart";
+
 export interface ChartPoint {
-  label: string; // дата или месяц
-  amount: number; // сумма одного платежа
-  total: number;
-  // накопительная сумма на этот момент
+  label: string;
+  amount: number | null;
+  total: number | null;
 }
 
-// ---------- Days ----------
+/* ===================================================== */
+/* ====================== HELPERS ====================== */
+/* ===================================================== */
+
+function formatMonth(date: Date) {
+  const raw = new Intl.DateTimeFormat("ru-RU", {
+    month: "long",
+  }).format(date);
+
+  return raw.charAt(0).toUpperCase() + raw.slice(1);
+}
+
+/* ===================================================== */
+/* ====================== STEPS ======================== */
+/* ===================================================== */
+
 export function buildDailyData(payments: Payment[]): ChartPoint[] {
   const sorted = [...payments].sort(
     (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
@@ -16,18 +31,26 @@ export function buildDailyData(payments: Payment[]): ChartPoint[] {
 
   let runningTotal = 0;
 
-  return sorted.map((p) => {
+  const result: ChartPoint[] = [
+    { label: "", amount: null, total: 0 }, // стартовая точка
+  ];
+
+  sorted.forEach((p) => {
     runningTotal += p.amount;
 
-    return {
+    result.push({
       label: p.date.slice(5),
       amount: p.amount,
       total: runningTotal,
-    };
+    });
   });
+
+  return result;
 }
 
-// ---------- Weeks ----------
+/* ===================================================== */
+/* ====================== WEEKS ======================== */
+/* ===================================================== */
 
 export function buildWeeklyData(payments: Payment[]): ChartPoint[] {
   const map = new Map<string, number>();
@@ -37,51 +60,88 @@ export function buildWeeklyData(payments: Payment[]): ChartPoint[] {
     const weekStart = startOfWeek(date, { weekStartsOn: 1 });
     const key = format(weekStart, "yyyy-MM-dd");
 
-    if (!map.has(key)) {
-      map.set(key, 0);
-    }
-
-    map.set(key, map.get(key)! + payment.amount);
+    map.set(key, (map.get(key) ?? 0) + payment.amount);
   });
+
+  const sortedWeeks = Array.from(map.keys()).sort(
+    (a, b) => new Date(a).getTime() - new Date(b).getTime(),
+  );
 
   let runningTotal = 0;
 
-  return Array.from(map.entries())
-    .sort(([a], [b]) => new Date(a).getTime() - new Date(b).getTime())
-    .map(([weekStart, amount]) => {
-      runningTotal += amount;
+  const result: ChartPoint[] = [
+    { label: "", amount: null, total: 0 }, // старт
+  ];
 
-      return {
-        label: `Неделя ${weekStart.slice(5)}`,
-        amount,
-        total: runningTotal,
-      };
-    });
-}
-
-// ---------- Months ----------
-export function buildMonthlyData(payments: Payment[]): ChartPoint[] {
-  const map = new Map<string, number>();
-
-  payments.forEach((p) => {
-    const d = new Date(p.date);
-    const key = `${d.getFullYear()}-${d.getMonth() + 1}`;
-
-    map.set(key, (map.get(key) ?? 0) + p.amount);
-  });
-
-  let runningTotal = 0;
-
-  return Array.from(map.entries()).map(([label, amount]) => {
+  sortedWeeks.forEach((weekKey) => {
+    const amount = map.get(weekKey)!;
     runningTotal += amount;
 
-    return {
-      label,
+    result.push({
+      label: `Неделя ${weekKey.slice(5)}`,
       amount,
       total: runningTotal,
-    };
+    });
   });
+
+  return result;
 }
+
+/* ===================================================== */
+/* ====================== MONTHS ======================= */
+/* ===================================================== */
+
+export function buildMonthlyData(payments: Payment[]): ChartPoint[] {
+  if (payments.length === 0) {
+    return [{ label: "", amount: null, total: 0 }];
+  }
+
+  const sorted = [...payments].sort(
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+  );
+
+  const firstDate = new Date(sorted[0].date);
+  const lastDate = new Date(sorted[sorted.length - 1].date);
+
+  const startMonth = new Date(firstDate.getFullYear(), firstDate.getMonth(), 1);
+  const endMonth = new Date(lastDate.getFullYear(), lastDate.getMonth(), 1);
+
+  const result: ChartPoint[] = [
+    { label: "", amount: null, total: 0 }, // стартовая точка
+  ];
+
+  let runningTotal = 0;
+
+  const current = new Date(startMonth);
+
+  while (current <= endMonth) {
+    const monthPayments = sorted.filter((p) => {
+      const d = new Date(p.date);
+      return (
+        d.getFullYear() === current.getFullYear() &&
+        d.getMonth() === current.getMonth()
+      );
+    });
+
+    const amount = monthPayments.reduce((sum, p) => sum + p.amount, 0);
+
+    runningTotal += amount;
+
+    result.push({
+      label: formatMonth(current),
+      amount: amount || null,
+      total: runningTotal,
+    });
+
+    current.setMonth(current.getMonth() + 1);
+  }
+
+  return result;
+}
+
+/* ===================================================== */
+/* ====================== MAIN ========================= */
+/* ===================================================== */
 
 export function buildChartData(mode: ChartMode, payments: Payment[]) {
   switch (mode) {
@@ -93,6 +153,7 @@ export function buildChartData(mode: ChartMode, payments: Payment[]) {
 
     case "months":
       return buildMonthlyData(payments);
+
     default:
       return [];
   }

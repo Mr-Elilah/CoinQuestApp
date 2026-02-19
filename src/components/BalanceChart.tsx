@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   LineChart as ReLineChart,
   Line,
@@ -20,6 +20,7 @@ import LeftCardWrapper from "./LeftCardWrapper";
 import { ChartPoint } from "../utils/chartHelpers";
 import TooltipUi from "./ui/TooltipUi";
 import { ChartMode } from "../types/chart";
+
 /* ===================== TYPES ===================== */
 
 interface SlotPoint {
@@ -39,6 +40,10 @@ interface BalanceChartProps {
   headerCenter?: React.ReactNode;
 }
 
+/* ===================== CONSTANT ===================== */
+
+const WINDOW = 10;
+
 /* ===================== COMPONENT ===================== */
 
 export default function BalanceChart({
@@ -50,25 +55,122 @@ export default function BalanceChart({
   mode,
   headerCenter,
 }: BalanceChartProps) {
-  const SLOTS = 10;
+  const totalPoints = points.length;
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  /* ---------- window start ---------- */
+
+  const [start, setStart] = useState(() =>
+    totalPoints > WINDOW ? totalPoints - WINDOW : 0,
+  );
+
+  useEffect(() => {
+    if (totalPoints > WINDOW) {
+      setStart(totalPoints - WINDOW);
+    } else {
+      setStart(0);
+    }
+  }, [totalPoints]);
+
+  /* ---------- wheel scroll ---------- */
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el || totalPoints <= WINDOW) return;
+
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+
+      setStart((prev) => {
+        const next = e.deltaY > 0 ? prev + 1 : prev - 1;
+        return Math.max(0, Math.min(next, totalPoints - WINDOW));
+      });
+    };
+
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, [totalPoints]);
+
+  /* ---------- visible slice ---------- */
+
+  const visiblePoints = useMemo(() => {
+    if (totalPoints > WINDOW) {
+      return points.slice(start, start + WINDOW);
+    }
+    return points;
+  }, [points, start, totalPoints]);
 
   /* ---------- slots ---------- */
 
   const baseSlots: SlotPoint[] = useMemo(() => {
-    const last = points.slice(-SLOTS);
-    const placeholdersCount = Math.max(0, SLOTS - last.length);
-    const stepPrefix =
-      mode === "steps" ? "Шаг" : mode === "weeks" ? "Неделя" : "Месяц";
-    const filled = last.map((p, i) => ({
-      stepLabel: `${stepPrefix} \u00A0 ${i + 1}`,
+    const prefix = mode === "steps" ? "Шаг" : mode === "weeks" ? "Неделя" : "";
+
+    /* ================= CASE: данных > 10 ================= */
+
+    if (totalPoints > WINDOW) {
+      return visiblePoints.map((p, i) => ({
+        stepLabel: mode === "months" ? p.label : `${prefix} ${start + i + 1}`,
+        realLabel: p.label,
+        total: p.total,
+        amount: p.amount,
+      }));
+    }
+
+    /* ================= CASE: данных ≤ 10 ================= */
+
+    const filled = visiblePoints.map((p, i) => ({
+      stepLabel: mode === "months" ? p.label : `${prefix} ${i + 1}`,
       realLabel: p.label,
       total: p.total,
       amount: p.amount,
     }));
 
+    const placeholdersCount = WINDOW - filled.length;
+
+    /* ===== MONTHS placeholder generation (calendar-based) ===== */
+
+    if (mode === "months") {
+      const slots: SlotPoint[] = [];
+
+      // если есть данные — берём первый месяц как точку отсчёта
+      let startDate: Date | null = null;
+
+      if (points.length > 0) {
+        const firstLabel = points[0].label;
+        const now = new Date();
+        const year = now.getFullYear();
+
+        startDate = new Date(year, new Date(`${firstLabel} 1`).getMonth(), 1);
+      } else {
+        startDate = new Date();
+      }
+
+      for (let i = 0; i < WINDOW; i++) {
+        const d = new Date(startDate);
+        d.setMonth(d.getMonth() + i);
+
+        const monthLabel = d.toLocaleString("ru-RU", { month: "long" });
+        const capitalized =
+          monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1);
+
+        const realPoint = filled[i];
+
+        slots.push({
+          stepLabel: capitalized,
+          realLabel: realPoint?.realLabel ?? "",
+          total: realPoint?.total ?? null,
+          amount: realPoint?.amount ?? null,
+        });
+      }
+
+      return slots;
+    }
+
+    /* ===== STEPS & WEEKS placeholders ===== */
+
     const placeholders = Array.from({ length: placeholdersCount }).map(
       (_, i) => ({
-        stepLabel: `${stepPrefix} \u00A0 ${filled.length + i + 1}`,
+        stepLabel: `${prefix} ${filled.length + i + 1}`,
         realLabel: "",
         total: null,
         amount: null,
@@ -85,7 +187,7 @@ export default function BalanceChart({
       ...filled,
       ...placeholders,
     ];
-  }, [points, mode]);
+  }, [visiblePoints, totalPoints, mode, start, points]);
 
   /* ---------- animation ---------- */
 
@@ -117,51 +219,37 @@ export default function BalanceChart({
     }));
   }, [baseSlots, visibleCount]);
 
-  /* ---------- helpers ---------- */
-
-  function isSlotPoint(value: unknown): value is SlotPoint {
-    return typeof value === "object" && value !== null && "realLabel" in value;
-  }
+  /* ---------- tooltip ---------- */
 
   const tooltipLabelFormatter = (
     _: unknown,
     payload: readonly Payload<ValueType, NameType>[],
-  ) => {
-    const raw = payload?.[0]?.payload;
-    return isSlotPoint(raw) ? raw.realLabel : "";
-  };
+  ) => payload?.[0]?.payload?.realLabel ?? "";
 
   const yMax = useMemo(() => {
     if (goalAmount === 0) return undefined;
-
     const padding = goalAmount * 0.01;
     const softMax = currentTotal + padding;
-
     return Math.min(goalAmount, softMax);
   }, [currentTotal, goalAmount]);
+
   /* ===================== RENDER ===================== */
 
   return (
     <LeftCardWrapper
       title={
         <div className="relative flex items-center">
-          {/* ЛЕВАЯ ЗОНА */}
           <div className="flex-1">{title}</div>
-
-          {/* ЦЕНТР */}
           {headerCenter && (
             <div className="absolute left-1/2 -translate-x-1/2">
               {headerCenter}
             </div>
           )}
-
-          {/* ПРАВАЯ ЗОНА (пусто, но держит баланс) */}
           <div className="flex-1" />
         </div>
       }
     >
-      <div className="relative w-full h-[320px]">
-        {/* top-right summary */}
+      <div ref={containerRef} className="relative w-full h-[320px]">
         <div className="absolute -top-10 right-4 z-10 text-sm text-gray-700">
           <TooltipUi content={`${progressPercent.toFixed(1)}%`}>
             <span className="font-semibold text-gray-900 dark:text-gray-400 cursor-default pr-1">
@@ -202,10 +290,7 @@ export default function BalanceChart({
             <Tooltip
               formatter={(value, name) => {
                 if (value == null) return [];
-                const label =
-                  name === "amount"
-                    ? ("Взнос" as NameType)
-                    : ("Сумма" as NameType);
+                const label = name === "amount" ? "Взнос" : "Сумма";
                 return [value, label];
               }}
               labelFormatter={tooltipLabelFormatter}
@@ -231,6 +316,7 @@ export default function BalanceChart({
               dataKey="total"
               stroke="#3b82f6"
               strokeWidth={3}
+              connectNulls={false}
               dot={({ cx, cy, value }) =>
                 value == null || cx == null || cy == null ? null : (
                   <circle
@@ -245,7 +331,6 @@ export default function BalanceChart({
               }
               activeDot={{ r: 6 }}
               animationDuration={700}
-              connectNulls={false}
             />
           </ReLineChart>
         </ResponsiveContainer>

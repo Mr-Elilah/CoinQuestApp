@@ -31,7 +31,6 @@ import { Progress } from "@/src/domain/progress";
 import { getUserProgress } from "@/src/services/progress.service";
 import { buildChartData } from "@/src/utils/chartHelpers";
 import ChartModeSwitcher from "@/src/components/ChartModeSwitcher";
-import ThemeSwitcher from "@/src/components/ThemeSwitcher";
 
 export default function ProfilePage() {
   const { mode: chartMode, setMode: setChartMode } = useChartMode();
@@ -63,7 +62,6 @@ export default function ProfilePage() {
   return (
     <main className="p-10">
       <MainTitle id="profileTitle" />
-      <ThemeSwitcher />
       <div className="grid grid-cols-12 gap-4 min-w-275">
         {/* ЛЕВАЯ КОЛОНКА */}
         <div className="col-span-3 space-y-6">
