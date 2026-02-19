@@ -44,6 +44,30 @@ interface BalanceChartProps {
 
 const WINDOW = 10;
 
+const RU_MONTHS = [
+  "Январь",
+  "Февраль",
+  "Март",
+  "Апрель",
+  "Май",
+  "Июнь",
+  "Июль",
+  "Август",
+  "Сентябрь",
+  "Октябрь",
+  "Ноябрь",
+  "Декабрь",
+];
+
+function isServiceStartPoint(point?: ChartPoint) {
+  if (!point) return false;
+  return point.label === "" && point.amount === null && point.total === 0;
+}
+
+function getMonthIndexFromRuLabel(label: string) {
+  return RU_MONTHS.indexOf(label);
+}
+
 /* ===================== COMPONENT ===================== */
 
 export default function BalanceChart({
@@ -56,6 +80,7 @@ export default function BalanceChart({
   headerCenter,
 }: BalanceChartProps) {
   const totalPoints = points.length;
+  const hasLeadingStartPoint = isServiceStartPoint(points[0]);
   const containerRef = useRef<HTMLDivElement>(null);
 
   /* ---------- window start ---------- */
@@ -109,7 +134,12 @@ export default function BalanceChart({
 
     if (totalPoints > WINDOW) {
       return visiblePoints.map((p, i) => ({
-        stepLabel: mode === "months" ? p.label : `${prefix} ${start + i + 1}`,
+        stepLabel:
+          mode === "months"
+            ? p.label
+            : isServiceStartPoint(p)
+              ? ""
+              : `${prefix} ${start + i + 1 - (hasLeadingStartPoint ? 1 : 0)}`,
         realLabel: p.label,
         total: p.total,
         amount: p.amount,
@@ -119,75 +149,78 @@ export default function BalanceChart({
     /* ================= CASE: данных ≤ 10 ================= */
 
     const filled = visiblePoints.map((p, i) => ({
-      stepLabel: mode === "months" ? p.label : `${prefix} ${i + 1}`,
+      stepLabel:
+        mode === "months"
+          ? p.label
+          : isServiceStartPoint(p)
+            ? ""
+            : `${prefix} ${i + 1 - (hasLeadingStartPoint ? 1 : 0)}`,
       realLabel: p.label,
       total: p.total,
       amount: p.amount,
     }));
+
+    /* ВАЖНО: для months убираем служебную стартовую точку,
+       иначе при <10 месяцев данные сдвигаются на 1 слот */
+    const monthFilled = filled.filter((p) => p.realLabel.trim() !== "");
 
     const placeholdersCount = WINDOW - filled.length;
 
     /* ===== MONTHS placeholder generation (calendar-based) ===== */
 
     if (mode === "months") {
-      const slots: SlotPoint[] = [];
+      const lastRealMonthLabel =
+        filled
+          .map((p) => p.realLabel)
+          .filter((label) => label.trim() !== "")
+          .at(-1) ?? "";
 
-      // если есть данные — берём первый месяц как точку отсчёта
-      let startDate: Date | null = null;
+      const nextStartMonthIndex = getMonthIndexFromRuLabel(lastRealMonthLabel);
 
-      if (points.length > 0) {
-        const firstLabel = points[0].label;
-        const now = new Date();
-        const year = now.getFullYear();
+      const monthPlaceholders = Array.from({ length: placeholdersCount }).map(
+        (_, i) => {
+          // если не нашли месяц, просто оставляем пустую подпись
+          if (nextStartMonthIndex < 0) {
+            return {
+              stepLabel: "",
+              realLabel: "",
+              total: null,
+              amount: null,
+            };
+          }
 
-        startDate = new Date(year, new Date(`${firstLabel} 1`).getMonth(), 1);
-      } else {
-        startDate = new Date();
-      }
+          const monthIndex = (nextStartMonthIndex + i + 1) % 12;
+          return {
+            stepLabel: RU_MONTHS[monthIndex],
+            realLabel: "",
+            total: null,
+            amount: null,
+          };
+        },
+      );
 
-      for (let i = 0; i < WINDOW; i++) {
-        const d = new Date(startDate);
-        d.setMonth(d.getMonth() + i);
-
-        const monthLabel = d.toLocaleString("ru-RU", { month: "long" });
-        const capitalized =
-          monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1);
-
-        const realPoint = filled[i];
-
-        slots.push({
-          stepLabel: capitalized,
-          realLabel: realPoint?.realLabel ?? "",
-          total: realPoint?.total ?? null,
-          amount: realPoint?.amount ?? null,
-        });
-      }
-
-      return slots;
+      // ВАЖНО: старт/существующие точки остаются 1-в-1 как в данных
+      return [...filled, ...monthPlaceholders];
     }
 
     /* ===== STEPS & WEEKS placeholders ===== */
 
+    const filledRealCount = filled.filter(
+      (p) => p.total !== 0 || p.amount !== null,
+    ).length;
+
     const placeholders = Array.from({ length: placeholdersCount }).map(
       (_, i) => ({
-        stepLabel: `${prefix} ${filled.length + i + 1}`,
+        stepLabel: `${prefix} ${filledRealCount + i + 1}`,
         realLabel: "",
         total: null,
         amount: null,
       }),
     );
 
-    return [
-      {
-        stepLabel: "",
-        realLabel: "",
-        total: 0,
-        amount: null,
-      },
-      ...filled,
-      ...placeholders,
-    ];
-  }, [visiblePoints, totalPoints, mode, start, points]);
+    // ВАЖНО: не добавляем вторую стартовую точку (она уже может быть в filled)
+    return [...filled, ...placeholders];
+  }, [visiblePoints, totalPoints, mode, start, points, hasLeadingStartPoint]);
 
   /* ---------- animation ---------- */
 
