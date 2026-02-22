@@ -2,8 +2,8 @@
 "use client";
 
 import { useState } from "react";
-import Header from "../components/Header";
-import Sidebar from "../components/Sidebar";
+import Header from "@/src/components/Header";
+import Sidebar from "@/src/components/Sidebar";
 
 export default function LayoutClient({
   children,
