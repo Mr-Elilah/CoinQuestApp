@@ -160,10 +160,6 @@ export default function BalanceChart({
       amount: p.amount,
     }));
 
-    /* ВАЖНО: для months убираем служебную стартовую точку,
-       иначе при <10 месяцев данные сдвигаются на 1 слот */
-    const monthFilled = filled.filter((p) => p.realLabel.trim() !== "");
-
     const placeholdersCount = WINDOW - filled.length;
 
     /* ===== MONTHS placeholder generation (calendar-based) ===== */
@@ -220,7 +216,7 @@ export default function BalanceChart({
 
     // ВАЖНО: не добавляем вторую стартовую точку (она уже может быть в filled)
     return [...filled, ...placeholders];
-  }, [visiblePoints, totalPoints, mode, start, points, hasLeadingStartPoint]);
+  }, [visiblePoints, totalPoints, mode, start, hasLeadingStartPoint]);
 
   /* ---------- animation ---------- */
 
