@@ -2,11 +2,18 @@ import React from "react";
 import LeftCardWrapper from "./LeftCardWrapper";
 import Image from "next/image";
 import { Progress } from "../domain/progress";
+import ProgressBar from "./ProgressBar";
 
 export interface ProgressCardProps {
   progress: Progress;
   goalProgress: number;
 }
+
+const COIN_DATA = [
+  { key: "gold", icon: "/icons/gold-coin.png", alt: "gold" },
+  { key: "silver", icon: "/icons/silver-coinh.png", alt: "silver" },
+  { key: "copper", icon: "/icons/copper-coin.png", alt: "copper" },
+] as const;
 
 export default function ProgressCard({
   progress,
@@ -24,47 +31,24 @@ export default function ProgressCard({
             height={44}
           />
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1">
-              <Image
-                src="/icons/gold-coin.png"
-                alt="gold"
-                width={30}
-                height={30}
-              />
-              <span>{progress.gold}</span>
-            </div>
-
-            <div className="flex items-center gap-1">
-              <Image
-                src="/icons/silver-coin.png"
-                alt="Silver"
-                width={30}
-                height={30}
-              />
-              <span>{progress.silver}</span>
-            </div>
-
-            <div className="flex items-center gap-1">
-              <Image
-                src="/icons/gold-coin.png"
-                alt="Copper"
-                width={30}
-                height={30}
-              />
-              <span>{progress.copper}</span>
-            </div>
+            {COIN_DATA.map((coin) => (
+              <div key={coin.key} className="flex items-center gap-1">
+                <Image src={coin.icon} alt={coin.alt} width={30} height={30} />
+                <span>{progress[coin.key]}</span>
+              </div>
+            ))}
           </div>
         </div>
 
         {/* Опыт     */}
         <div className="flex items-center gap-8">
           <Image src="/icons/xp-icon.png" alt="XP" width={48} height={48} />
-          <div className="flex-1 h-3 bg-orange-200 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-orange-500"
-              style={{ width: `${progress.xpProgress * 100}%` }}
-            />
-          </div>
+
+          <ProgressBar
+            value={progress.xpProgress * 100}
+            trackClassName="bg-orange-200"
+            colorClassName="bg-orange-500"
+          />
         </div>
 
         {/* Уроки   */}
@@ -100,12 +84,11 @@ export default function ProgressCard({
             width={44}
             height={44}
           />
-          <div className="flex-1 h-3 bg-blue-200 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-blue-600"
-              style={{ width: `${goalProgress}%` }}
-            />
-          </div>
+          <ProgressBar
+            value={goalProgress}
+            trackClassName="bg-blue-200"
+            colorClassName="bg-blue-600"
+          />
         </div>
       </div>
     </LeftCardWrapper>
