@@ -43,6 +43,9 @@ interface BalanceChartProps {
 /* ===================== CONSTANT ===================== */
 
 const WINDOW = 10;
+const Y_SEGMENTS = 12;
+
+const RESERVED_TOP_SECTORS = 1;
 
 const RU_MONTHS = [
   "Январь",
@@ -255,12 +258,46 @@ export default function BalanceChart({
     payload: readonly Payload<ValueType, NameType>[],
   ) => payload?.[0]?.payload?.realLabel ?? "";
 
-  const yMax = useMemo(() => {
-    if (goalAmount === 0) return undefined;
-    const padding = goalAmount * 0.01;
-    const softMax = currentTotal + padding;
-    return Math.min(goalAmount, softMax);
-  }, [currentTotal, goalAmount]);
+  const yScale = useMemo(() => {
+    const totals = chartData
+      .map((p) => p.total)
+      .filter((v): v is number => v !== null);
+
+    if (totals.length === 0) return undefined;
+
+    const windowMax = Math.max(...totals);
+
+    const hasHorizontalWindow = totalPoints > WINDOW;
+    const maxStart = Math.max(0, totalPoints - WINDOW);
+    const isAtEnd = start >= maxStart;
+
+    // Фиксируем низ графика у нуля, чтобы при скролле к концу
+    // левая часть не "зажималась" вверх.
+    const domainMin = 0;
+
+    // Если окно не в конце — оставляем верхние секции свободными (headroom).
+    const activeSectors =
+      hasHorizontalWindow && !isAtEnd
+        ? Y_SEGMENTS - RESERVED_TOP_SECTORS
+        : Y_SEGMENTS;
+
+    const safeMax = Math.max(1, windowMax);
+    const domainMax = Math.max(
+      1,
+      (safeMax * Y_SEGMENTS) / Math.max(1, activeSectors),
+    );
+
+    const step = (domainMax - domainMin) / Y_SEGMENTS;
+    const ticks = Array.from(
+      { length: Y_SEGMENTS + 1 },
+      (_, i) => domainMin + step * i,
+    );
+
+    return {
+      domain: [domainMin, domainMax] as [number, number],
+      ticks,
+    };
+  }, [chartData, totalPoints, start]);
 
   /* ===================== RENDER ===================== */
 
@@ -311,8 +348,12 @@ export default function BalanceChart({
             />
 
             <YAxis
-              domain={yMax ? [0, yMax] : undefined}
+              domain={yScale?.domain ?? undefined}
+              ticks={yScale?.ticks}
               tick={{ fill: "#888", fontSize: 12 }}
+              tickFormatter={(value) =>
+                Math.round(Number(value)).toLocaleString("ru-RU")
+              }
               width={55}
             />
 
@@ -332,7 +373,7 @@ export default function BalanceChart({
             />
 
             <Area
-              type="monotone"
+              type="linear"
               dataKey="amount"
               stroke="none"
               fill="url(#balColor)"
@@ -341,7 +382,7 @@ export default function BalanceChart({
             />
 
             <Line
-              type="monotone"
+              type="linear"
               dataKey="total"
               stroke="#3b82f6"
               strokeWidth={3}
