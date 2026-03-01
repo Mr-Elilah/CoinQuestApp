@@ -11,11 +11,12 @@ import ParticipantCard from "@/src/components/ParticipantCard";
 import ProgressCard from "@/src/components/ProgressCard";
 import ResourcesCard from "@/src/components/ResourcesCard";
 import BalanceChart from "@/src/components/BalanceChart";
+import FinanceSummaryCard from "@/src/components/FinanceSummaryCard";
 import { User } from "@/src/domain/user";
 import { Achievement } from "@/src/domain/achievement";
 import { IncomeSource } from "@/src/domain/source";
 import { Resource } from "@/src/domain/resource";
-
+import { getFinanceSummary } from "@/src/services/finance-summary.service";
 import { getSources } from "@/src/services/source.service";
 import { getResources } from "@/src/services/resource.service";
 import { getUserAchievements } from "@/src/services/achievement.service";
@@ -42,6 +43,12 @@ export default function ProfilePage() {
   const [goal, setGoal] = useState<Goal | null>(null);
   const [payments, setPayments] = useState<Payment[]>([]);
   const [progress, setProgress] = useState<Progress | null>(null);
+  const [financeSummary, setFinanceSummary] = useState<{
+    income: number;
+    expense: number;
+    asset: number;
+    liability: number;
+  } | null>(null);
 
   useEffect(() => {
     getCurrentUser().then(setUser);
@@ -51,9 +58,10 @@ export default function ProfilePage() {
     getUserGoal().then(setGoal);
     getUserPayments().then(setPayments);
     getUserProgress().then(setProgress);
+    getFinanceSummary().then(setFinanceSummary);
   }, []);
 
-  if (!user || !goal || !progress) return null;
+  if (!user || !goal || !progress || !financeSummary) return null;
 
   const total = calculateTotal(payments);
   const progressPercent = calculateProgressPercent(total, goal);
@@ -73,7 +81,7 @@ export default function ProfilePage() {
           <ResourcesCard resources={resources} />
         </div>
 
-        <div className="col-span-9 space-y-4">
+        <div className="col-span-9 space-y-6">
           {/* ПРАВАЯ КОЛОНКА */}
 
           <BalanceChart
@@ -92,6 +100,32 @@ export default function ProfilePage() {
               <ChartModeSwitcher value={chartMode} onChange={setChartMode} />
             }
           />
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+            <FinanceSummaryCard
+              title="Активы"
+              amount={financeSummary.asset}
+              variant="positive"
+              currencyIcon={<span> $</span>}
+            />
+            <FinanceSummaryCard
+              title="Доходы"
+              amount={financeSummary.income}
+              variant="positive"
+              currencyIcon={<span> $</span>}
+            />
+            <FinanceSummaryCard
+              title="Расходы"
+              amount={financeSummary.expense}
+              variant="negative"
+              currencyIcon={<span> $</span>}
+            />
+            <FinanceSummaryCard
+              title="Пассивы"
+              amount={financeSummary.liability}
+              variant="negative"
+              currencyIcon={<span> $</span>}
+            />
+          </div>
         </div>
       </div>
     </main>

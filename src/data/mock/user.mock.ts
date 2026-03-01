@@ -9,4 +9,9 @@ export const mockUser: User = {
   birthPlace: "Drogheda, Ireland",
   currentLocation: "New York, USA",
   workplace: "NBC",
+
+  homeLocation: {
+    lat: 40.7128,
+    lng: -74.006,
+  },
 };

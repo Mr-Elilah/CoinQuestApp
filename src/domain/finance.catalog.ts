@@ -1,5 +1,3 @@
-import { strict } from "assert";
-
 export type FinanceSection = "income" | "expense" | "asset" | "liability";
 
 export interface CatalogCategory {

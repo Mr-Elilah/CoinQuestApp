@@ -1,3 +1,5 @@
+import { Location } from "./location";
+
 export interface User {
   id: string;
   name: string;
@@ -8,4 +10,6 @@ export interface User {
   birthPlace?: string;
   currentLocation?: string;
   workplace?: string;
+
+  homeLocation?: Location;
 }

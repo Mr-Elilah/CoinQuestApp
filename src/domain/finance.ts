@@ -19,7 +19,7 @@ export interface FinanceEntry {
   quantity?: number;
   unitPrice?: number;
 
-  store?: string;
+  storeId?: string;
   date: string;
   note?: string;
 }

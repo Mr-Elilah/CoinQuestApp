@@ -25,7 +25,7 @@ export const mockEntries: FinanceEntry[] = [
     amount: 100,
     quantity: 2,
     unitPrice: 50,
-    store: "Пятёрочка",
+    storeId: "s1",
     date: "2026-02-10",
   },
   {

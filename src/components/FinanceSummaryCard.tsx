@@ -1,41 +1,42 @@
-import React from "react";
+"use client";
+
+import LeftCardWrapper from "./LeftCardWrapper";
+import { ReactNode } from "react";
 
 export interface FinanceSummaryCardProps {
   title: string;
   amount: number;
-  currencySymbol?: string;
+  currencyIcon?: ReactNode; // теперь это иконка
+  variant?: "positive" | "negative"; // тип карточки
   onEdit?: () => void;
 }
 
-export const FinanceSummaryCard: React.FC<FinanceSummaryCardProps> = ({
+export default function FinanceSummaryCard({
   title,
   amount,
-  currencySymbol = "$",
+  currencyIcon,
+  variant = "positive",
   onEdit,
-}) => {
+}: FinanceSummaryCardProps) {
+  const titleColor = variant === "positive" ? "text-green-400" : "text-red-400";
+
   return (
-    <div className="relative bg-white dark:bg-neutral-900 rounded-2xl shadow-md p-5 w-full">
-      {/* Заголовок + кнопка редактирования */}
-      <div className="flex justify-between items-center mb-3">
-        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
-          {title}
-        </h3>
+    <LeftCardWrapper>
+      <div className="flex justify-between items-start">
+        <h3 className={`text-sm font-semibold ${titleColor}`}>{title}</h3>
 
         <button
           onClick={onEdit}
-          className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition"
+          className="text-gray-400 hover:text-gray-600 hover:scale-110 hover:shadow-md transition-all cursor-pointer text-sm"
         >
           ✏️
         </button>
       </div>
 
-      {/* Сумма */}
-      <div className="flex items-end gap-2">
-        <span className="text-2xl font-semibold text-gray-900 dark:text-white">
-          {amount.toLocaleString()}
-        </span>
-        <span className="text-gray-500 text-sm">{currencySymbol}</span>
+      <div className="mt-6 flex justify-between gap-2">
+        <div className="text-2xl font-bold">{amount.toLocaleString()}</div>
+        <div className="text-xl">{currencyIcon}</div>
       </div>
-    </div>
+    </LeftCardWrapper>
   );
-};
+}
